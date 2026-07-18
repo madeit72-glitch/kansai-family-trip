@@ -21,7 +21,7 @@ const seed = {
 };
 let state = JSON.parse(localStorage.getItem('kansai-family-trip') || 'null') || structuredClone(seed);
 const $ = s => document.querySelector(s);
-const save = () => localStorage.setItem('kansai-family-trip', JSON.stringify(state));
+const save = () => { localStorage.setItem('kansai-family-trip', JSON.stringify(state)); window.scheduleCloudSave?.(); };
 const escapeHtml = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function renderDates(){ $('#dateStrip').innerHTML=state.days.map(d=>`<button class="date-button ${d[0]===state.selected?'active':''}" data-date="${d[0]}"><span>${d[1]}</span><strong>${d[2]}</strong></button>`).join(''); }
 function render(){
