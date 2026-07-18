@@ -68,3 +68,7 @@ window.addSchedulePoint=function(date,title,place,time,detail){
   state.routePoints[date].push([title,`${time} · ${match[3]}${detail?` · ${detail}`:''}`,match[1],match[2]]);
   save();window.renderRouteMap(date);toast('일정과 지도 동선을 함께 업데이트했습니다');
 };
+window.removeSchedulePoint=function(date,title,time){
+  if(!state.routePoints?.[date])return;
+  state.routePoints[date]=state.routePoints[date].filter(point=>!(point[0]===title&&point[1].startsWith(time)));
+};

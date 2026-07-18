@@ -83,6 +83,7 @@
     <form id="entryForm" method="dialog">
       <div class="dialog-head"><div><p class="section-kicker">NEW ITEM</p><h2 id="dialogTitle">일정 추가</h2></div><button type="button" id="closeDialog">×</button></div>
       <input type="hidden" id="entryType" />
+      <input type="hidden" id="entryIndex" />
       <label>제목<input id="entryTitle" required placeholder="예: 후시미 이나리 산책" /></label>
       <div id="timeField">
         <span class="field-label">시작 시간</span>
@@ -93,7 +94,7 @@
       <label id="placeField">장소<input id="entryPlace" placeholder="예: 기요미즈데라 또는 도톤보리" /></label>
       <label>메모<input id="entryDetail" placeholder="예: 입장권 확인, 버스로 이동" /></label>
       <label id="codeField" hidden>예약번호<input id="entryCode" placeholder="예: KYO-260803" /></label>
-      <button class="submit-button" type="submit">저장하기</button>
+      <div class="dialog-actions"><button id="deleteEntry" class="delete-entry-button" type="button" hidden>일정 삭제</button><button class="submit-button" type="submit">저장하기</button></div>
     </form>
   </dialog>
   <dialog id="joinDialog" class="join-dialog">
