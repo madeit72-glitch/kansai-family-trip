@@ -17,7 +17,11 @@ const seed = {
     '2026-08-05':[['🍱','장어덮밥 우나기야','12:00 · 4명','UNAGI-805'],['🏨','교토 센트럴 호텔','체크인 15:00 · 조식 포함','KYO-260803']],
     '2026-08-06':[['🚆','교토 → 오사카','신쾌속 · 자유석','JR-4P'],['🏨','오사카 난바 호텔','2박 · 트윈룸 2개','OSK-260806']]
   },
-  checks:[['여권 4명',true],['eSIM · 로밍',true],['상비약',false],['보조배터리',false],['교통카드',true],['우산 · 양산',false]]
+  checks:[['여권 4명',true],['eSIM · 로밍',true],['상비약',false],['보조배터리',false],['교통카드',true],['우산 · 양산',false]],
+  lodgings:{
+    kyoto:{name:'Keio Prelia Hotel Kyoto Karasuma Gojo',address:'396 Gojo Karasuma-cho, Shimogyo-ku, Kyoto 600-8418, Japan',map:'https://www.google.com/maps/search/?api=1&query=Keio+Prelia+Hotel+Kyoto+Karasuma+Gojo'},
+    osaka:{name:'Centara Life Namba Hotel Osaka',address:'3-4-21 Shikitsuhigashi, Naniwa Ward, Osaka 556-0012, Japan',map:'https://www.google.com/maps/search/?api=1&query=Centara+Life+Namba+Hotel+Osaka'}
+  }
 };
 let state = JSON.parse(localStorage.getItem('kansai-family-trip') || 'null') || structuredClone(seed);
 const $ = s => document.querySelector(s);
@@ -26,6 +30,7 @@ const escapeHtml = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&l
 function renderDates(){ $('#dateStrip').innerHTML=state.days.map(d=>`<button class="date-button ${d[0]===state.selected?'active':''}" data-date="${d[0]}"><span>${d[1]}</span><strong>${d[2]}</strong></button>`).join(''); }
 function render(){
   renderDates(); const day=state.days.find(d=>d[0]===state.selected); $('#dayTitle').textContent=day[3]; $('#dayLabel').textContent=`8월 ${day[2]}일 · ${day[1]}요일`;
+  const stay=state.selected<='2026-08-04'?state.lodgings?.kyoto:state.lodgings?.osaka;if(stay){$('#hotelMap').href=stay.map;$('#hotelMap').textContent=`🗺️ ${state.selected<='2026-08-04'?'교토':'오사카'} 숙소`;$('#copyAddress').dataset.address=stay.address;$('#copyAddress').dataset.name=stay.name}
   const schedules=state.schedules[state.selected]||[];
   $('#scheduleList').innerHTML=schedules.length?schedules.map((x,i)=>`<article class="timeline-item"><time class="timeline-time">${escapeHtml(x[0])}</time><i class="timeline-dot"></i><div class="timeline-card"><button class="delete" data-delete-schedule="${i}" aria-label="일정 삭제">×</button><h3>${escapeHtml(x[1])}</h3><p>${escapeHtml(x[2])}</p></div></article>`).join(''):'<div class="empty">등록된 일정이 없습니다. 첫 일정을 추가해 보세요.</div>';
   const bookings=state.bookings[state.selected]||[];
@@ -43,7 +48,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{if(e.target.matches('[data-check]')){state.checks[+e.target.dataset.check][1]=e.target.checked;save();render()}});
 $('#closeDialog').onclick=()=>$('#entryDialog').close();
 $('#entryForm').onsubmit=e=>{e.preventDefault();const type=$('#entryType').value,title=$('#entryTitle').value.trim(),detail=$('#entryDetail').value.trim();if(!title)return;if(type==='schedule'){(state.schedules[state.selected]??=[]).push([$('#entryTime').value,title,detail]);state.schedules[state.selected].sort((a,b)=>a[0].localeCompare(b[0]));}else{(state.bookings[state.selected]??=[]).push(['🎫',title,detail,$('#entryCode').value||'확인 필요']);}save();render();$('#entryDialog').close();toast('저장했습니다');};
-$('#copyAddress').onclick=async()=>{await navigator.clipboard?.writeText('교토역, Higashishiokoji Kamadonocho, Shimogyo Ward, Kyoto');toast('숙소 주소를 복사했습니다')};
+$('#copyAddress').onclick=async()=>{const text=`${$('#copyAddress').dataset.name||''}\n${$('#copyAddress').dataset.address||''}`;await navigator.clipboard?.writeText(text);toast('현재 숙소 주소를 복사했습니다')};
 $('#resetBtn').onclick=()=>{if(confirm('입력한 내용을 지우고 샘플로 초기화할까요?')){state=structuredClone(seed);save();render();toast('초기화했습니다')}};
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
 render();
