@@ -40,15 +40,22 @@ const PLACE_COORDS=[
   [['한큐','우메다'],34.7030,135.4980,'우메다 일대']
 ];
 let routeMap,routeLayer;
+const googleSearchUrl=point=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${point[2]},${point[3]}`)}`;
+const googleDirectionsUrl=point=>`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${point[2]},${point[3]}`)}&travelmode=transit`;
+const googleDayRouteUrl=points=>{
+  if(points.length<2)return points.length?googleDirectionsUrl(points[0]):'#';
+  const start=points[0],end=points[points.length-1],middle=points.slice(1,-1).map(point=>`${point[2]},${point[3]}`).join('|');
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(`${start[2]},${start[3]}`)}&destination=${encodeURIComponent(`${end[2]},${end[3]}`)}${middle?`&waypoints=${encodeURIComponent(middle)}`:''}&travelmode=transit`;
+};
 window.renderRouteMap=function(date){
   if(!window.L||!document.querySelector('#routeMap'))return;
-  if(!routeMap){routeMap=L.map('routeMap',{zoomControl:true,scrollWheelZoom:false});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(routeMap)}
+  if(!routeMap){routeMap=L.map('routeMap',{zoomControl:true,scrollWheelZoom:false});L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(routeMap)}
   if(routeLayer)routeLayer.remove();routeLayer=L.layerGroup().addTo(routeMap);
   const custom=state?.routePoints?.[date]||[],points=[...(ROUTES[date]||[]),...custom],color=ROUTE_COLORS[date]||'#e86f51',latlngs=[];
-  points.forEach((p,index)=>{const latlng=[p[2],p[3]];latlngs.push(latlng);const icon=L.divIcon({className:'',html:`<div class="route-marker" style="background:${color}"><span>${index+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28]});L.marker(latlng,{icon}).bindPopup(`<strong>${index+1}. ${p[0]}</strong><br>${p[1]}<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p[0])}" target="_blank">Google 지도 열기</a>`).addTo(routeLayer)});
+  points.forEach((p,index)=>{const latlng=[p[2],p[3]];latlngs.push(latlng);const icon=L.divIcon({className:'',html:`<div class="route-marker" style="background:${color}"><span>${index+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28]});L.marker(latlng,{icon}).bindTooltip(`${index+1}. ${p[0]}`,{permanent:true,direction:'top',offset:[0,-28],className:'route-korean-label'}).bindPopup(`<strong>${index+1}. ${p[0]}</strong><br>${p[1]}<div class="map-popup-actions"><a href="${googleSearchUrl(p)}" target="_blank" rel="noopener">지도에서 보기</a><a href="${googleDirectionsUrl(p)}" target="_blank" rel="noopener">현재 위치에서 길찾기</a></div>`).addTo(routeLayer)});
   if(latlngs.length>1)L.polyline(latlngs,{color,weight:5,opacity:.85,lineJoin:'round',dashArray:'12 7'}).addTo(routeLayer);
   if(latlngs.length)routeMap.fitBounds(L.latLngBounds(latlngs).pad(.16),{maxZoom:14});
-  document.querySelector('#routeLegend').innerHTML=points.map((p,i)=>`<div class="route-stop"><b style="background:${color}">${i+1}</b><span>${p[0]}<small>${p[1]}</small></span></div>`).join('');
+  document.querySelector('#routeLegend').innerHTML=`<a class="day-route-button" href="${googleDayRouteUrl(points)}" target="_blank" rel="noopener">오늘 전체 동선 구글 지도에서 보기</a>`+points.map((p,i)=>`<div class="route-stop"><b style="background:${color}">${i+1}</b><span>${p[0]}<small>${p[1]}</small><span class="route-links"><a href="${googleSearchUrl(p)}" target="_blank" rel="noopener">지도 보기</a><a href="${googleDirectionsUrl(p)}" target="_blank" rel="noopener">길찾기</a></span></span></div>`).join('');
   setTimeout(()=>routeMap.invalidateSize(),50);
 };
 window.addSchedulePoint=function(date,title,place,time,detail){
