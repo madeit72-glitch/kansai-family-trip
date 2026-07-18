@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#193a34" />
+  <title>우리 가족 일본여행</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="hero-top">
+        <span class="eyebrow">2026 FAMILY TRIP</span>
+        <button class="icon-button" id="resetBtn" aria-label="샘플 데이터 초기화">↻</button>
+      </div>
+      <h1>우리 가족<br><em>간사이 여행</em></h1>
+      <div class="trip-meta"><span>🇯🇵 교토 · 오사카</span><span>8. 3 — 8. 8</span></div>
+    </header>
+
+    <section class="date-strip" id="dateStrip" aria-label="여행 날짜 선택"></section>
+
+    <section class="quick-card">
+      <div>
+        <p class="section-kicker" id="dayLabel">오늘의 여정</p>
+        <h2 id="dayTitle">교토의 여름을 걷는 날</h2>
+      </div>
+      <div class="weather"><span>☀️</span><strong>34°</strong></div>
+      <div class="quick-actions">
+        <a id="hotelMap" href="https://maps.google.com/?q=Kyoto+Station" target="_blank" rel="noreferrer">🗺️ 숙소 지도</a>
+        <button id="copyAddress">⧉ 주소 복사</button>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-head">
+        <div><p class="section-kicker">SCHEDULE</p><h2>오늘 일정</h2></div>
+        <button class="add-button" data-open="schedule">＋ 일정 추가</button>
+      </div>
+      <div id="scheduleList" class="timeline"></div>
+    </section>
+
+    <section class="content-section reservation-section">
+      <div class="section-head">
+        <div><p class="section-kicker">RESERVATIONS</p><h2>예약 정보</h2></div>
+        <button class="add-button" data-open="booking">＋ 예약 추가</button>
+      </div>
+      <div id="bookingList" class="booking-list"></div>
+    </section>
+
+    <section class="content-section checklist-section">
+      <div class="section-head">
+        <div><p class="section-kicker">PACK TOGETHER</p><h2>가족 준비물</h2></div>
+        <span id="progressText" class="progress-text"></span>
+      </div>
+      <div class="progress"><i id="progressBar"></i></div>
+      <div id="checkList" class="check-list"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="주요 메뉴">
+    <button class="active">⌂<span>홈</span></button>
+    <button data-jump="scheduleList">◷<span>일정</span></button>
+    <button data-jump="bookingList">▣<span>예약</span></button>
+    <button data-jump="checkList">✓<span>준비물</span></button>
+  </nav>
+
+  <dialog id="entryDialog">
+    <form id="entryForm" method="dialog">
+      <div class="dialog-head"><div><p class="section-kicker">NEW ITEM</p><h2 id="dialogTitle">일정 추가</h2></div><button type="button" id="closeDialog">×</button></div>
+      <input type="hidden" id="entryType" />
+      <label>제목<input id="entryTitle" required placeholder="예: 후시미 이나리 산책" /></label>
+      <label id="timeField">시간<input id="entryTime" type="time" value="10:00" /></label>
+      <label>장소 또는 상세 정보<input id="entryDetail" placeholder="예: 교토역에서 JR 나라선" /></label>
+      <label id="codeField" hidden>예약번호<input id="entryCode" placeholder="예: KYO-260803" /></label>
+      <button class="submit-button" type="submit">저장하기</button>
+    </form>
+  </dialog>
+  <div id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
