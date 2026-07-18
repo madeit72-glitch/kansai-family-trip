@@ -51,10 +51,14 @@ let state = JSON.parse(localStorage.getItem('kansai-family-trip') || 'null') || 
 const $ = s => document.querySelector(s);
 const save = () => { localStorage.setItem('kansai-family-trip', JSON.stringify(state)); window.scheduleCloudSave?.(); };
 const escapeHtml = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const to24Hour=(period,hour,minute)=>{let h=Number(hour);if(period==='AM'&&h===12)h=0;if(period==='PM'&&h!==12)h+=12;return `${String(h).padStart(2,'0')}:${String(Math.max(0,Math.min(59,Number(minute)||0))).padStart(2,'0')}`};
+const hourOptions=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}시</option>`).join('');
+$('#startHour').innerHTML=hourOptions;$('#endHour').innerHTML=hourOptions;
 function renderDates(){ $('#dateStrip').innerHTML=state.days.map(d=>`<button class="date-button ${d[0]===state.selected?'active':''}" data-date="${d[0]}"><span>${d[1]}</span><strong>${d[2]}</strong></button>`).join(''); }
 function render(){
   renderDates(); const day=state.days.find(d=>d[0]===state.selected); $('#dayTitle').textContent=day[3]; $('#dayLabel').textContent=`8월 ${day[2]}일 · ${day[1]}요일`;
   const stay=state.selected<='2026-08-04'?state.lodgings?.kyoto:state.lodgings?.osaka;if(stay){$('#hotelMap').href=stay.map;$('#hotelMap').textContent=`🗺️ ${state.selected<='2026-08-04'?'교토':'오사카'} 숙소`;$('#copyAddress').dataset.address=stay.address;$('#copyAddress').dataset.name=stay.name}
+  window.renderRouteMap?.(state.selected);
   const schedules=state.schedules[state.selected]||[];
   $('#scheduleList').innerHTML=schedules.length?schedules.map((x,i)=>`<article class="timeline-item"><time class="timeline-time">${escapeHtml(x[0])}</time><i class="timeline-dot"></i><div class="timeline-card"><button class="delete" data-delete-schedule="${i}" aria-label="일정 삭제">×</button><h3>${escapeHtml(x[1])}</h3><p>${escapeHtml(x[2])}</p></div></article>`).join(''):'<div class="empty">등록된 일정이 없습니다. 첫 일정을 추가해 보세요.</div>';
   const bookings=state.bookings[state.selected]||[];
@@ -64,14 +68,14 @@ function render(){
 }
 document.addEventListener('click',e=>{
   const date=e.target.closest('[data-date]'); if(date){state.selected=date.dataset.date;save();render();return}
-  const open=e.target.closest('[data-open]'); if(open){const type=open.dataset.open;$('#entryType').value=type;$('#dialogTitle').textContent=type==='schedule'?'일정 추가':'예약 추가';$('#timeField').hidden=type!=='schedule';$('#codeField').hidden=type!=='booking';$('#entryForm').reset();$('#entryType').value=type;$('#entryTime').value='10:00';$('#entryDialog').showModal();return}
+  const open=e.target.closest('[data-open]'); if(open){const type=open.dataset.open;$('#entryType').value=type;$('#dialogTitle').textContent=type==='schedule'?'일정 추가':'예약 추가';$('#timeField').hidden=type!=='schedule';$('#placeField').hidden=type!=='schedule';$('#codeField').hidden=type!=='booking';$('#entryForm').reset();$('#entryType').value=type;$('#startHour').value='10';$('#endHour').value='11';$('#startPeriod').value='AM';$('#endPeriod').value='AM';$('#entryDialog').showModal();return}
   const ds=e.target.closest('[data-delete-schedule]'); if(ds){state.schedules[state.selected].splice(+ds.dataset.deleteSchedule,1);save();render();return}
   const db=e.target.closest('[data-delete-booking]'); if(db){state.bookings[state.selected].splice(+db.dataset.deleteBooking,1);save();render();return}
   const jump=e.target.closest('[data-jump]'); if(jump)document.getElementById(jump.dataset.jump).scrollIntoView({behavior:'smooth',block:'center'});
 });
 document.addEventListener('change',e=>{if(e.target.matches('[data-check]')){state.checks[+e.target.dataset.check][1]=e.target.checked;save();render()}});
 $('#closeDialog').onclick=()=>$('#entryDialog').close();
-$('#entryForm').onsubmit=e=>{e.preventDefault();const type=$('#entryType').value,title=$('#entryTitle').value.trim(),detail=$('#entryDetail').value.trim();if(!title)return;if(type==='schedule'){(state.schedules[state.selected]??=[]).push([$('#entryTime').value,title,detail]);state.schedules[state.selected].sort((a,b)=>a[0].localeCompare(b[0]));}else{(state.bookings[state.selected]??=[]).push(['🎫',title,detail,$('#entryCode').value||'확인 필요']);}save();render();$('#entryDialog').close();toast('저장했습니다');};
+$('#entryForm').onsubmit=e=>{e.preventDefault();const type=$('#entryType').value,title=$('#entryTitle').value.trim(),detail=$('#entryDetail').value.trim();if(!title)return;if(type==='schedule'){const start=to24Hour($('#startPeriod').value,$('#startHour').value,$('#startMinute').value),end=to24Hour($('#endPeriod').value,$('#endHour').value,$('#endMinute').value),place=$('#entryPlace').value.trim(),fullDetail=`~${end}${place?` · ${place}`:''}${detail?` · ${detail}`:''}`;(state.schedules[state.selected]??=[]).push([start,title,fullDetail]);state.schedules[state.selected].sort((a,b)=>a[0].localeCompare(b[0]));save();window.addSchedulePoint?.(state.selected,title,place,start,detail);toast(place?'일정을 저장하고 지도 위치를 확인합니다':'일정을 저장했습니다')}else{(state.bookings[state.selected]??=[]).push(['🎫',title,detail,$('#entryCode').value||'확인 필요']);save();toast('예약을 저장했습니다')}render();$('#entryDialog').close();};
 $('#copyAddress').onclick=async()=>{const text=`${$('#copyAddress').dataset.name||''}\n${$('#copyAddress').dataset.address||''}`;await navigator.clipboard?.writeText(text);toast('현재 숙소 주소를 복사했습니다')};
 $('#resetBtn').onclick=()=>{if(confirm('입력한 내용을 지우고 샘플로 초기화할까요?')){state=structuredClone(seed);save();render();toast('초기화했습니다')}};
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}

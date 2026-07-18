@@ -1,5 +1,5 @@
-const CACHE='kansai-family-trip-v6';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./sync.js','./manifest.webmanifest'];
+const CACHE='kansai-family-trip-v8';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./sync.js','./map.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))));
 self.addEventListener('fetch',event=>event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request))));

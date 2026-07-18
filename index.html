@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#193a34" />
   <title>우리 가족 일본여행</title>
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -32,6 +34,16 @@
         <a id="hotelMap" href="https://maps.google.com/?q=Kyoto+Station" target="_blank" rel="noreferrer">🗺️ 숙소 지도</a>
         <button id="copyAddress">⧉ 주소 복사</button>
       </div>
+    </section>
+
+    <section class="content-section map-section">
+      <div class="section-head">
+        <div><p class="section-kicker">ROUTE MAP</p><h2>오늘의 여행 동선</h2></div>
+        <span class="map-hint">번호 순서대로 이동</span>
+      </div>
+      <div id="routeMap" aria-label="선택한 날짜의 여행 동선 지도"></div>
+      <div id="routeLegend" class="route-legend"></div>
+      <p class="map-note">지도 위치는 일정에 적힌 장소를 기준으로 표시합니다. 세부 방문지가 확정되면 위치를 조정할 수 있어요.</p>
     </section>
 
     <section class="content-section">
@@ -72,8 +84,14 @@
       <div class="dialog-head"><div><p class="section-kicker">NEW ITEM</p><h2 id="dialogTitle">일정 추가</h2></div><button type="button" id="closeDialog">×</button></div>
       <input type="hidden" id="entryType" />
       <label>제목<input id="entryTitle" required placeholder="예: 후시미 이나리 산책" /></label>
-      <label id="timeField">시간<input id="entryTime" type="time" value="10:00" /></label>
-      <label>장소 또는 상세 정보<input id="entryDetail" placeholder="예: 교토역에서 JR 나라선" /></label>
+      <div id="timeField">
+        <span class="field-label">시작 시간</span>
+        <div class="time-picker"><select id="startPeriod" aria-label="시작 오전 오후"><option value="AM">오전</option><option value="PM">오후</option></select><select id="startHour" aria-label="시작 시"></select><input id="startMinute" aria-label="시작 분" type="number" min="0" max="59" value="0" inputmode="numeric" /><span>분</span></div>
+        <span class="field-label end-label">끝나는 시간</span>
+        <div class="time-picker"><select id="endPeriod" aria-label="종료 오전 오후"><option value="AM">오전</option><option value="PM">오후</option></select><select id="endHour" aria-label="종료 시"></select><input id="endMinute" aria-label="종료 분" type="number" min="0" max="59" value="0" inputmode="numeric" /><span>분</span></div>
+      </div>
+      <label id="placeField">장소<input id="entryPlace" placeholder="예: 기요미즈데라 또는 도톤보리" /></label>
+      <label>메모<input id="entryDetail" placeholder="예: 입장권 확인, 버스로 이동" /></label>
       <label id="codeField" hidden>예약번호<input id="entryCode" placeholder="예: KYO-260803" /></label>
       <button class="submit-button" type="submit">저장하기</button>
     </form>
@@ -88,6 +106,8 @@
   </dialog>
   <div id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="map.js"></script>
   <script src="app.js"></script>
   <script src="sync.js"></script>
 </body>
